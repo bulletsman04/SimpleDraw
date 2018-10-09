@@ -10,11 +10,14 @@ using System.Windows.Forms;
 
 namespace SimpleDraw
 {
-    public partial class Form1 : Form
+    public partial class SimpleDraw : Form
     {
-        public Form1()
+        public SimpleDraw()
         {
+            
             InitializeComponent();
+            this.Size = new Size((int)(0.65 * System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Width),
+                (int)(0.85 * System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height));
         }
     }
 }
