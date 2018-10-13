@@ -51,6 +51,13 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\Edge.cs" />
+    <Compile Include="Model\Figure.cs" />
+    <Compile Include="Model\Polygon.cs" />
+    <Compile Include="Model\Restriction.cs" />
+    <Compile Include="Model\Vector2D.cs" />
+    <Compile Include="Model\Vertex.cs" />
+    <Compile Include="Model\WorkingArea.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
