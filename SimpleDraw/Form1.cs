@@ -40,6 +40,8 @@ namespace SimpleDraw
             }
             Point mousePoint = new Point(x, y);
             bool modelChange = true;
+
+            // Sprawdzmy czy nie kliknęliśmy w wierzchołek
             foreach (var v in workingArea.State.CurrentPolygon.Vertices)
             {
                 if (v.Rectangle.Contains(mousePoint))
@@ -48,6 +50,11 @@ namespace SimpleDraw
                     {
                         modelChange = false;
                         workingArea.State.Mode = Mode.Edit;
+                        // ToDo: Code repetition - down
+                        Edge newEdge = new Edge((workingArea.State.PrevVertex, workingArea.State.FirstVertex));
+                        workingArea.State.CurrentPolygon.Edges.Add(newEdge);
+                        workingArea.State.FirstVertex.edges = (newEdge, workingArea.State.FirstVertex.edges.right);
+                        workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left, newEdge);
                         workingArea.RepaintBitmap();
                         pictureBox.Refresh();
                     }
@@ -58,11 +65,37 @@ namespace SimpleDraw
                 }
             }
 
+            // Sprawdzamy czy nie kliknęliśmy w krawędź ToDO: wykonać tylko jeśli nie kilknięto w wierzchołek - chociaż tu chyba nieistotne
+            foreach (var edge in workingArea.State.CurrentPolygon.Edges)
+            {
+                // Niekoniecznie działa - źle czyta dla pionowych, czasem też źle dla innych
+
+                //if (edge.Rectangle.Contains(mousePoint))
+                //{
+                //    double crossProduct = Vector2D.CrossProduct(edge.Vector2D,new Vector2D(new Point(0,0),mousePoint));
+                //    if (Math.Abs(crossProduct) < 2000)
+                //        modelChange = false;
+                //}
+
+                if (edge.IsPointClose(mousePoint))
+                {
+                    modelChange = false;
+                }
+            }
+
+
+
             if (modelChange)
             {
                 Vertex newVertex = new Vertex(x, y);
                 if (workingArea.State.CurrentPolygon.Vertices.Count != 0)
-                    workingArea.State.CurrentPolygon.Edges.Add(new Edge((workingArea.State.PrevVertex, newVertex)));
+                {
+                    // ToDo: Code repetition - up
+                    Edge newEdge = new Edge((workingArea.State.PrevVertex, newVertex));
+                    workingArea.State.CurrentPolygon.Edges.Add(newEdge);
+                    newVertex.edges = (newEdge,null);
+                    workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left,newEdge);
+                }
                 workingArea.State.CurrentPolygon.Vertices.Add(newVertex);
 
                 workingArea.RepaintBitmap();

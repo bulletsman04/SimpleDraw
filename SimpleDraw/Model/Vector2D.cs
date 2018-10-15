@@ -19,5 +19,13 @@ namespace SimpleDraw.Model
             End = end;
             Coordinates = (end.X - start.X, end.Y - start.Y);
         }
+
+        public static double CrossProduct(Vector2D v1, Vector2D v2)
+        {
+            Point movedPointV1 = new Point(v1.End.X - v1.Start.X, v1.End.Y - v1.Start.Y);
+            Point movedPointV2 = new Point(v2.End.X - v1.Start.X, v2.End.Y - v1.Start.Y);
+
+            return movedPointV1.X*movedPointV2.Y - movedPointV2.X*movedPointV1.Y;
+        }
     }
 }
