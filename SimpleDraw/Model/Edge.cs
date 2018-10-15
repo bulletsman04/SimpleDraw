@@ -11,5 +11,9 @@ namespace SimpleDraw.Model
         public (Vertex left, Vertex right) ends;
         public List<Restriction> Restrictions { get; set; }
 
+        public Edge((Vertex left, Vertex right) ends)
+        {
+            this.ends = ends;
+        }
     }
 }

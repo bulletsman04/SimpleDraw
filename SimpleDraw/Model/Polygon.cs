@@ -17,6 +17,12 @@ namespace SimpleDraw.Model
             throw new NotImplementedException();
         }
 
+        public Polygon()
+        {
+            Vertices = new List<Vertex>();
+            Edges = new List<Edge>();
+        }
+
         // Może jakiś visitor do metody przechodzącej po wierzchołkach - choć to chyba przerost formy nad treścią
     }
 }

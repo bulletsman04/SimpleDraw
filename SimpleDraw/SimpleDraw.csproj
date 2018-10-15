@@ -51,6 +51,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\DrawingState.cs" />
     <Compile Include="Model\Edge.cs" />
     <Compile Include="Model\Figure.cs" />
     <Compile Include="Model\Polygon.cs" />

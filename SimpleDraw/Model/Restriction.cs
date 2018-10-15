@@ -18,11 +18,12 @@ namespace SimpleDraw.Model
 
         public bool isResticted(Vertex moved, Vector2D vector)
         {
-
+            throw new NotImplementedException();
         }
 
         bool preserveRestriction(Vertex moved, Vector2D vector)
         {
+            throw new NotImplementedException();
 
         }
 
