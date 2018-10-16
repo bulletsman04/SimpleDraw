@@ -29,7 +29,9 @@ namespace SimpleDraw
         {
             int x = e.Location.X;
             int y = e.Location.Y;
+            Point mousePoint = new Point(x, y);
 
+            // ToDo: tymczasowe
             if (workingArea.State.Mode == Mode.Edit)
                 return;
 
@@ -38,7 +40,7 @@ namespace SimpleDraw
                 workingArea.Polygons.Add(new Polygon());
                 workingArea.State.CurrentPolygon = workingArea.Polygons[workingArea.Polygons.Count - 1];
             }
-            Point mousePoint = new Point(x, y);
+            
             bool modelChange = true;
 
             // Sprawdzmy czy nie kliknęliśmy w wierzchołek
@@ -46,22 +48,28 @@ namespace SimpleDraw
             {
                 if (v.Rectangle.Contains(mousePoint))
                 {
-                    if (workingArea.State.CurrentPolygon.Vertices.Count >=3 && v == workingArea.State.FirstVertex)
+                    // ToDo: TO niedobry if jeśli chodzi o obsługę wielu wielokątów
+                    if (workingArea.State.Mode == Mode.Draw)
                     {
-                        modelChange = false;
-                        workingArea.State.Mode = Mode.Edit;
-                        // ToDo: Code repetition - down
-                        Edge newEdge = new Edge((workingArea.State.PrevVertex, workingArea.State.FirstVertex));
-                        workingArea.State.CurrentPolygon.Edges.Add(newEdge);
-                        workingArea.State.FirstVertex.edges = (newEdge, workingArea.State.FirstVertex.edges.right);
-                        workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left, newEdge);
-                        workingArea.RepaintBitmap();
-                        pictureBox.Refresh();
+                        if (workingArea.State.CurrentPolygon.Vertices.Count >= 3 && v == workingArea.State.FirstVertex)
+                        {
+                            modelChange = false;
+                            workingArea.State.Mode = Mode.Edit;
+                            // ToDo: Code repetition - down
+                            Edge newEdge = new Edge((workingArea.State.PrevVertex, workingArea.State.FirstVertex));
+                            workingArea.State.CurrentPolygon.Edges.Add(newEdge);
+                            workingArea.State.FirstVertex.edges = (newEdge, workingArea.State.FirstVertex.edges.right);
+                            workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left, newEdge);
+                            workingArea.RepaintBitmap();
+                            pictureBox.Refresh();
+                        }
+                        else
+                        {
+                            modelChange = false;
+                        }
                     }
-                    else
-                    {
-                        modelChange = false;
-                    }
+                    
+                    return;
                 }
             }
 
@@ -111,10 +119,46 @@ namespace SimpleDraw
             int x = e.Location.X;
             int y = e.Location.Y;
             Point mousePoint = new Point(x, y);
-           
+
+            if (workingArea.State.MovedVertex != null)
+            {
+                HandleVertexMove(mousePoint);
+            }
+
             workingArea.State.MousePosition = mousePoint;
             workingArea.RepaintBitmap();
             pictureBox.Refresh();
+        }
+
+        private void HandleVertexMove(Point mousePoint)
+        {
+            workingArea.State.MovedVertex.vPoint = mousePoint;
+        }
+
+        private void pictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            // ToDo: tymczasowe (chyba)
+            if (workingArea.State.Mode == Mode.Draw)
+                return;
+
+            int x = e.Location.X;
+            int y = e.Location.Y;
+            Point mousePoint = new Point(x, y);
+
+            foreach (var v in workingArea.State.CurrentPolygon.Vertices)
+            {
+                if (v.Rectangle.Contains(mousePoint))
+                {
+                    workingArea.State.MovedVertex = v;
+                }
+            }
+        }
+
+        private void pictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (workingArea.State.Mode == Mode.Draw)
+                return;
+            workingArea.State.MovedVertex = null;
         }
     }
 }

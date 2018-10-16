@@ -10,7 +10,17 @@ namespace SimpleDraw.Model
     internal class Vertex
     {
         public const int vertexSize = 8;
-        public Point vPoint { get; set; }
+        private Point _vPoint;
+        public Point vPoint {
+            get => _vPoint;
+            set
+            {
+                _vPoint = value;
+                int x = value.X;
+                int y = value.Y;
+                Rectangle = Rectangle = new Rectangle(x - vertexSize / 2, y - vertexSize / 2, vertexSize, vertexSize);
+            }
+        }
         public Rectangle Rectangle { get; set; }
         public (Edge left,Edge right) edges { get; set; }
         public Action<Vector2D> Move { get; set; }
