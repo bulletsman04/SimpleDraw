@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MyDrawing;
 
 
 namespace SimpleDraw.Model
@@ -28,6 +29,10 @@ namespace SimpleDraw.Model
                 gr.Clear(Color.White);
                 Pen thick_pen = new Pen(Color.Black, 2);
                 Brush brush = new SolidBrush(Color.Blue);
+
+                //Test MyDrawing
+                MyGraphics myGraphics = new MyGraphics(Bitmap);
+
                 foreach (var edge in State.CurrentPolygon.Edges)
                 {
                     
@@ -42,7 +47,9 @@ namespace SimpleDraw.Model
 
                 else if (State.MousePosition != null)
                 {
-                    gr.DrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
+                    //Test MyDrawing
+                    // gr.DrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
+                    myGraphics.MyDrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
                     State.MousePosition = null;
                 }
 
