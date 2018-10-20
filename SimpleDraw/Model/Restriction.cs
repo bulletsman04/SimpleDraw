@@ -6,26 +6,12 @@ using System.Threading.Tasks;
 
 namespace SimpleDraw.Model
 {
-    enum RestrictionType
+    internal abstract class Restriction
     {
-        Horizontal,
-        Vertical,
-        Length
-    }
-    internal class Restriction
-    {
-        private RestrictionType restrictionType;
 
-        public bool isResticted(Vertex moved, Vector2D vector)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract bool isResticted(Vertex moved, Vector2D vector);
 
-        bool preserveRestriction(Vertex moved, Vector2D vector)
-        {
-            throw new NotImplementedException();
-
-        }
+        public abstract bool preserveRestriction(Vertex moved, Vector2D vector);
 
     }
 }

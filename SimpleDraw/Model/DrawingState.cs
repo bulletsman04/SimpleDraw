@@ -22,6 +22,7 @@ namespace SimpleDraw.Model
 
         public Vertex PrevVertex => CurrentPolygon.Vertices[CurrentPolygon.Vertices.Count - 1];
         public Vertex MovedVertex { get; set; }
+        public Edge ClickedEdge { get; set; }
 
         public Point? MousePosition { get; set; }
 

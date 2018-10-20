@@ -54,6 +54,7 @@
     <Compile Include="Model\DrawingState.cs" />
     <Compile Include="Model\Edge.cs" />
     <Compile Include="Model\Figure.cs" />
+    <Compile Include="Model\LengthRestriciton.cs" />
     <Compile Include="Model\LineFunction.cs" />
     <Compile Include="Model\Polygon.cs" />
     <Compile Include="Model\Restriction.cs" />

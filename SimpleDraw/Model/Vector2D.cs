@@ -27,5 +27,10 @@ namespace SimpleDraw.Model
 
             return movedPointV1.X*movedPointV2.Y - movedPointV2.X*movedPointV1.Y;
         }
+
+        public static Point MovePoint(Point p, Vector2D v)
+        {
+            return new Point(p.X+v.Coordinates.x,p.Y + v.Coordinates.y);
+        }
     }
 }

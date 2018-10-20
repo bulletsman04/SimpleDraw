@@ -15,6 +15,16 @@ namespace SimpleDraw.Model
         public Rectangle Rectangle { get; set; }
         public LineFunction function { get; set; }
 
+        public double Length
+        {
+            get
+            {
+                Point p1 = ends.left.MoveTo == null ? ends.left.vPoint : ends.left.MoveTo.Value;
+                Point p2 = ends.right.MoveTo == null ? ends.right.vPoint : ends.right.MoveTo.Value;
+                return Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
+            }
+        }
+
         public Edge((Vertex left, Vertex right) ends)
         {
             this.ends = ends;
@@ -27,6 +37,7 @@ namespace SimpleDraw.Model
             int width = Math.Abs(x1 - x2) > 5 ? Math.Abs(x1 - x2) : 6;
             int height = Math.Abs(y1 - y2) > 5 ? Math.Abs(y1 - y2) : 6;
             Rectangle = new Rectangle(Math.Min(x1,x2), Math.Min(y1,y2 ),width, height);
+            Restrictions = new List<Restriction>();
         }
 
         public bool IsPointClose(Point p)
@@ -41,6 +52,18 @@ namespace SimpleDraw.Model
                 return false;
 
             return true;
+        }
+
+        public bool PreserveRestrictions(Vertex moved, Vector2D vector)
+        {
+            bool changed = false;
+            foreach (Restriction restriction in Restrictions)
+            {
+                if (restriction.preserveRestriction(moved, vector) == true)
+                    changed = true;
+            }
+
+            return changed;
         }
     }
 }

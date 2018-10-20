@@ -23,12 +23,14 @@ namespace SimpleDraw.Model
         }
         public Rectangle Rectangle { get; set; }
         public (Edge left,Edge right) edges { get; set; }
-        public Action<Vector2D> Move { get; set; }
+        public Point? MoveTo { get; set; }
 
         public Vertex(int x, int y)
         {
             vPoint = new Point(x,y);
             Rectangle = new Rectangle(x - vertexSize/2, y - vertexSize/2, vertexSize, vertexSize);
         }
+
+       
     }
 }

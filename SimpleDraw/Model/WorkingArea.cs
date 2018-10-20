@@ -30,6 +30,12 @@ namespace SimpleDraw.Model
                 Pen thick_pen = new Pen(Color.Black, 2);
                 Brush brush = new SolidBrush(Color.Blue);
 
+                foreach (Vertex v in State.CurrentPolygon.Vertices)
+                {
+
+                    gr.FillRectangle(brush, v.Rectangle);
+
+                }
                 //Test MyDrawing
                 MyGraphics myGraphics = new MyGraphics(Bitmap);
 
@@ -53,12 +59,7 @@ namespace SimpleDraw.Model
                     State.MousePosition = null;
                 }
 
-                foreach (Vertex v in State.CurrentPolygon.Vertices)
-                {
-
-                    gr.FillRectangle(brush, v.Rectangle);
-
-                }
+               
                 brush.Dispose();
                 thick_pen.Dispose();
             }

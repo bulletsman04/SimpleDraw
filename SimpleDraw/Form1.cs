@@ -30,10 +30,7 @@ namespace SimpleDraw
             int x = e.Location.X;
             int y = e.Location.Y;
             Point mousePoint = new Point(x, y);
-
-            // ToDo: tymczasowe
-            if (workingArea.State.Mode == Mode.Edit)
-                return;
+            bool modelChange = workingArea.State.Mode == Mode.Draw;
 
             if (workingArea.Polygons.Count == 0)
             {
@@ -41,8 +38,7 @@ namespace SimpleDraw
                 workingArea.State.CurrentPolygon = workingArea.Polygons[workingArea.Polygons.Count - 1];
             }
             
-            bool modelChange = true;
-
+           
             // Sprawdzmy czy nie kliknęliśmy w wierzchołek
             foreach (var v in workingArea.State.CurrentPolygon.Vertices)
             {
@@ -69,7 +65,7 @@ namespace SimpleDraw
                         }
                     }
                     
-                    return;
+                    
                 }
             }
 
@@ -87,7 +83,15 @@ namespace SimpleDraw
 
                 if (edge.IsPointClose(mousePoint))
                 {
+                    // ToDo: To trzeba potem wyczyścić
+                    workingArea.State.ClickedEdge = edge;
+                    if (e.Button == MouseButtons.Right)
+                    {
+                        HandleRightEdgeClick(sender,e);
+                    }
+
                     modelChange = false;
+                    break;
                 }
             }
 
@@ -132,7 +136,37 @@ namespace SimpleDraw
 
         private void HandleVertexMove(Point mousePoint)
         {
-            workingArea.State.MovedVertex.vPoint = mousePoint;
+            //workingArea.State.MovedVertex.vPoint = mousePoint;
+
+            workingArea.State.MovedVertex.MoveTo = mousePoint;
+            Edge e = workingArea.State.MovedVertex.edges.left;
+            Vertex v = workingArea.State.MovedVertex;
+            List<Vertex> movedVertices = new List<Vertex>();
+            movedVertices.Add(v);
+            bool changed = true;
+            bool anyAction = false;
+            while (changed )
+            {
+                changed = e.PreserveRestrictions(v, new Vector2D(v.vPoint, v.MoveTo.Value));
+
+                if (changed)
+                {
+                    v = e.ends.left;
+                    e = v.edges.left;
+                    movedVertices.Add(v);
+                    anyAction = true;
+                }
+
+                //ToDo: I wyczyść MoveTo ?
+                if (anyAction && e.ends.right == workingArea.State.MovedVertex)
+                    return;
+            }
+
+            foreach (var movedVertex in movedVertices)
+            {
+                movedVertex.vPoint = movedVertex.MoveTo.Value;
+                movedVertex.MoveTo = null;
+            }
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
@@ -159,6 +193,19 @@ namespace SimpleDraw
             if (workingArea.State.Mode == Mode.Draw)
                 return;
             workingArea.State.MovedVertex = null;
+        }
+
+        private void HandleRightEdgeClick(object sender, MouseEventArgs e)
+        {
+            ContextMenu contextMenu = new ContextMenu();
+            contextMenu.MenuItems.Add("Length Restriction", new EventHandler(HandleLenghtRestrictionClick));
+            pictureBox.ContextMenu = contextMenu;
+            pictureBox.ContextMenu.Show(pictureBox,new Point(e.X,e.Y));
+        }
+
+        private void HandleLenghtRestrictionClick( object sender, EventArgs e)
+        {
+            workingArea.State.ClickedEdge.Restrictions.Add(new LengthRestriciton(workingArea.State.ClickedEdge, 10));
         }
     }
 }
