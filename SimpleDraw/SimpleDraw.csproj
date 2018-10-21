@@ -54,12 +54,14 @@
     <Compile Include="Model\DrawingState.cs" />
     <Compile Include="Model\Edge.cs" />
     <Compile Include="Model\Figure.cs" />
+    <Compile Include="Model\HorizontalRestriction.cs" />
     <Compile Include="Model\LengthRestriciton.cs" />
     <Compile Include="Model\LineFunction.cs" />
     <Compile Include="Model\Polygon.cs" />
     <Compile Include="Model\Restriction.cs" />
     <Compile Include="Model\Vector2D.cs" />
     <Compile Include="Model\Vertex.cs" />
+    <Compile Include="Model\VerticalRestriction.cs" />
     <Compile Include="Model\WorkingArea.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

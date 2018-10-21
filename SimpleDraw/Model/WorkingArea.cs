@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ namespace SimpleDraw.Model
                 gr.Clear(Color.White);
                 Pen thick_pen = new Pen(Color.Black, 2);
                 Brush brush = new SolidBrush(Color.Blue);
+                Font drawFont = new Font("Arial", 12);
+                SolidBrush drawBrush = new SolidBrush(Color.Black);
 
                 foreach (Vertex v in State.CurrentPolygon.Vertices)
                 {
@@ -43,7 +46,13 @@ namespace SimpleDraw.Model
                 {
                     
                     gr.DrawLine(thick_pen, edge.ends.left.vPoint, edge.ends.right.vPoint);
-                  
+                    // ToDo: Te zwolnić, zrobić środek krawędzi i tangens krawędzi do wypozycjonowania oznaczenia
+                    Point edgeMiddle = edge.EdgeMiddle;
+                    
+                    foreach (var edgeRestriction in edge.Restrictions)
+                    {
+                        gr.DrawString(edgeRestriction.ToString(),drawFont,drawBrush,edgeMiddle.X,edgeMiddle.Y);
+                    }
                 }
                 
                 if (State.Mode == Mode.Edit)
@@ -59,9 +68,10 @@ namespace SimpleDraw.Model
                     State.MousePosition = null;
                 }
 
-               
+                drawFont.Dispose();
                 brush.Dispose();
                 thick_pen.Dispose();
+                drawBrush.Dispose();
             }
         }
     }

@@ -139,28 +139,47 @@ namespace SimpleDraw
             //workingArea.State.MovedVertex.vPoint = mousePoint;
 
             workingArea.State.MovedVertex.MoveTo = mousePoint;
-            Edge e = workingArea.State.MovedVertex.edges.left;
-            Vertex v = workingArea.State.MovedVertex;
+            Edge eright = workingArea.State.MovedVertex.edges.right;
+            Vertex vright = workingArea.State.MovedVertex;
+            Edge eleft = workingArea.State.MovedVertex.edges.left;
+            Vertex vleft = workingArea.State.MovedVertex;
             List<Vertex> movedVertices = new List<Vertex>();
-            movedVertices.Add(v);
-            bool changed = true;
+            movedVertices.Add(vleft);
+            bool changedLeft = true;
+            bool changedRight = true;
             bool anyAction = false;
-            while (changed )
-            {
-                changed = e.PreserveRestrictions(v, new Vector2D(v.vPoint, v.MoveTo.Value));
 
-                if (changed)
+            //left && right
+            while (changedLeft || changedRight)
+            {
+                changedLeft = eleft.PreserveRestrictions(vleft, new Vector2D(vleft.vPoint, vleft.MoveTo.Value),true);
+                changedRight = eright.PreserveRestrictions(vright, new Vector2D(vright.vPoint, vright.MoveTo.Value), false);
+
+
+                if (changedLeft)
                 {
-                    v = e.ends.left;
-                    e = v.edges.left;
-                    movedVertices.Add(v);
+                    vleft = eleft.ends.left;
+                    eleft = vleft.edges.left;
+                    movedVertices.Add(vleft);
+                    anyAction = true;
+                }
+
+                if (changedRight)
+                {
+                    vright = eright.ends.right;
+                    eright = vright.edges.right;
+                    movedVertices.Add(vright);
                     anyAction = true;
                 }
 
                 //ToDo: I wyczyść MoveTo ?
-                if (anyAction && e.ends.right == workingArea.State.MovedVertex)
+                if (anyAction && vleft == vright)
                     return;
             }
+       
+
+
+            
 
             foreach (var movedVertex in movedVertices)
             {
@@ -199,13 +218,56 @@ namespace SimpleDraw
         {
             ContextMenu contextMenu = new ContextMenu();
             contextMenu.MenuItems.Add("Length Restriction", new EventHandler(HandleLenghtRestrictionClick));
+            contextMenu.MenuItems.Add("Vertical Restriction", new EventHandler(HandleVerticalRestrictionClick));
+            contextMenu.MenuItems.Add("Horizontal Restriction", new EventHandler(HandleHorizontalRestrictionClick));
+            contextMenu.MenuItems.Add("Clear Restriction", new EventHandler((sender1,e1) => workingArea.State.ClickedEdge.Restrictions.Clear()));
             pictureBox.ContextMenu = contextMenu;
             pictureBox.ContextMenu.Show(pictureBox,new Point(e.X,e.Y));
+            pictureBox.ContextMenu = null;
         }
 
         private void HandleLenghtRestrictionClick( object sender, EventArgs e)
         {
-            workingArea.State.ClickedEdge.Restrictions.Add(new LengthRestriciton(workingArea.State.ClickedEdge, 10));
+            double desiredLength = 50;
+            AddRestriction(new LengthRestriciton(workingArea.State.ClickedEdge, desiredLength));
+            workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
+            if (workingArea.State.ClickedEdge.Length == desiredLength)
+                return;
+            Point? moveTo = workingArea.State.ClickedEdge.FindLengthPoint(desiredLength);
+            HandleVertexMove(moveTo.Value);
+            workingArea.State.MovedVertex = null;
+        }
+
+        private void HandleVerticalRestrictionClick(object sender, EventArgs e)
+        {
+           
+            AddRestriction(new VerticalRestriction(workingArea.State.ClickedEdge));
+            workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
+            Point moveTo = new Point(workingArea.State.ClickedEdge.ends.right.vPoint.X, workingArea.State.MovedVertex.vPoint.Y);
+            HandleVertexMove(moveTo);
+            workingArea.State.MovedVertex = null;
+        }
+
+        private void HandleHorizontalRestrictionClick(object sender, EventArgs e)
+        {
+            AddRestriction(new HorizontalRestriction(workingArea.State.ClickedEdge));
+
+            workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
+            Point moveTo = new Point(workingArea.State.MovedVertex.vPoint.X, workingArea.State.ClickedEdge.ends.right.vPoint.Y);
+            HandleVertexMove(moveTo);
+            workingArea.State.MovedVertex = null;
+        }
+
+        private void AddRestriction(Restriction restriction)
+        {
+            if (workingArea.State.ClickedEdge.Restrictions.Count == 0)
+            {
+                workingArea.State.ClickedEdge.Restrictions.Add(restriction);
+            }
+            else
+            {
+                workingArea.State.ClickedEdge.Restrictions[0] = restriction;
+            }
         }
     }
 }

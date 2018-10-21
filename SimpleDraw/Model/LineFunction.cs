@@ -14,6 +14,8 @@ namespace SimpleDraw.Model
         public double C { get; set; }
         public bool isVertical { get; set; }
 
+        public float angle => (float)Math.Atan(B);
+
         public LineFunction(Point p1, Point p2)
         {
             double x1 = p1.X;
@@ -34,5 +36,7 @@ namespace SimpleDraw.Model
             }
 
         }
+
+        
     }
 }
