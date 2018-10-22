@@ -24,7 +24,7 @@ namespace SimpleDraw.Model
             Point p1 = moved.MoveTo.Value;
             Point p2 = toCheck.vPoint;
             // ToDo: tu chyba trzeba dać jakiś błąd - bo pixele przy wyliczaniu punktu mogą być zaokrąglane
-            return Math.Abs(Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2)) - _length) < 2;
+            return Math.Abs(Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2)) - _length) < 1;
 
         }
 

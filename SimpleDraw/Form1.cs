@@ -30,6 +30,11 @@ namespace SimpleDraw
             int x = e.Location.X;
             int y = e.Location.Y;
             Point mousePoint = new Point(x, y);
+            NewMethod(sender, e, x, y, mousePoint);
+        }
+
+        private void NewMethod(object sender, MouseEventArgs e, int x, int y, Point mousePoint)
+        {
             bool modelChange = workingArea.State.Mode == Mode.Draw;
 
             if (workingArea.Polygons.Count == 0)
@@ -37,8 +42,8 @@ namespace SimpleDraw
                 workingArea.Polygons.Add(new Polygon());
                 workingArea.State.CurrentPolygon = workingArea.Polygons[workingArea.Polygons.Count - 1];
             }
-            
-           
+
+
             // Sprawdzmy czy nie kliknęliśmy w wierzchołek
             foreach (var v in workingArea.State.CurrentPolygon.Vertices)
             {
@@ -64,22 +69,14 @@ namespace SimpleDraw
                             modelChange = false;
                         }
                     }
-                    
-                    
+
+
                 }
             }
 
             // Sprawdzamy czy nie kliknęliśmy w krawędź ToDO: wykonać tylko jeśli nie kilknięto w wierzchołek - chociaż tu chyba nieistotne
             foreach (var edge in workingArea.State.CurrentPolygon.Edges)
             {
-                // Niekoniecznie działa - źle czyta dla pionowych, czasem też źle dla innych
-
-                //if (edge.Rectangle.Contains(mousePoint))
-                //{
-                //    double crossProduct = Vector2D.CrossProduct(edge.Vector2D,new Vector2D(new Point(0,0),mousePoint));
-                //    if (Math.Abs(crossProduct) < 2000)
-                //        modelChange = false;
-                //}
 
                 if (edge.IsPointClose(mousePoint))
                 {
@@ -87,7 +84,7 @@ namespace SimpleDraw
                     workingArea.State.ClickedEdge = edge;
                     if (e.Button == MouseButtons.Right)
                     {
-                        HandleRightEdgeClick(sender,e);
+                        HandleRightEdgeClick(sender, e);
                     }
 
                     modelChange = false;
@@ -105,8 +102,8 @@ namespace SimpleDraw
                     // ToDo: Code repetition - up
                     Edge newEdge = new Edge((workingArea.State.PrevVertex, newVertex));
                     workingArea.State.CurrentPolygon.Edges.Add(newEdge);
-                    newVertex.edges = (newEdge,null);
-                    workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left,newEdge);
+                    newVertex.edges = (newEdge, null);
+                    workingArea.State.PrevVertex.edges = (workingArea.State.PrevVertex.edges.left, newEdge);
                 }
                 workingArea.State.CurrentPolygon.Vertices.Add(newVertex);
 
@@ -228,19 +225,39 @@ namespace SimpleDraw
 
         private void HandleLenghtRestrictionClick( object sender, EventArgs e)
         {
-            double desiredLength = 50;
-            AddRestriction(new LengthRestriciton(workingArea.State.ClickedEdge, desiredLength));
-            workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
-            if (workingArea.State.ClickedEdge.Length == desiredLength)
+            int length = (int)workingArea.State.ClickedEdge.Length;
+            double desiredLength=length;
+
+            LengthWindow lw = new LengthWindow(ref desiredLength);
+            var result = lw.ShowDialog();
+            desiredLength = lw._length;
+
+            if (result == DialogResult.Cancel || desiredLength==0)
                 return;
-            Point? moveTo = workingArea.State.ClickedEdge.FindLengthPoint(desiredLength);
-            HandleVertexMove(moveTo.Value);
-            workingArea.State.MovedVertex = null;
+
+            AddRestriction(new LengthRestriciton(workingArea.State.ClickedEdge, desiredLength));
+
+            if (desiredLength != length)
+            {
+                workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
+                if (workingArea.State.ClickedEdge.Length == desiredLength)
+                    return;
+                Point? moveTo = workingArea.State.ClickedEdge.FindLengthPoint(desiredLength);
+                HandleVertexMove(moveTo.Value);
+                workingArea.State.MovedVertex = null;
+            }
         }
 
         private void HandleVerticalRestrictionClick(object sender, EventArgs e)
         {
-           
+            Edge left = workingArea.State.ClickedEdge.ends.left.edges.left;
+            Edge right = workingArea.State.ClickedEdge.ends.right.edges.right;
+
+            if (left.Restrictions.Count >= 1 && left.Restrictions[0] is VerticalRestriction)
+                return;
+            if (right.Restrictions.Count >= 1 && right.Restrictions[0] is VerticalRestriction)
+                return;
+
             AddRestriction(new VerticalRestriction(workingArea.State.ClickedEdge));
             workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
             Point moveTo = new Point(workingArea.State.ClickedEdge.ends.right.vPoint.X, workingArea.State.MovedVertex.vPoint.Y);
@@ -250,6 +267,14 @@ namespace SimpleDraw
 
         private void HandleHorizontalRestrictionClick(object sender, EventArgs e)
         {
+            Edge left = workingArea.State.ClickedEdge.ends.left.edges.left;
+            Edge right = workingArea.State.ClickedEdge.ends.right.edges.right;
+
+            if (left.Restrictions.Count >= 1 && left.Restrictions[0] is HorizontalRestriction)
+                return;
+            if (right.Restrictions.Count >= 1 && right.Restrictions[0] is HorizontalRestriction)
+                return;
+
             AddRestriction(new HorizontalRestriction(workingArea.State.ClickedEdge));
 
             workingArea.State.MovedVertex = workingArea.State.ClickedEdge.ends.left;
@@ -260,6 +285,8 @@ namespace SimpleDraw
 
         private void AddRestriction(Restriction restriction)
         {
+           
+
             if (workingArea.State.ClickedEdge.Restrictions.Count == 0)
             {
                 workingArea.State.ClickedEdge.Restrictions.Add(restriction);
