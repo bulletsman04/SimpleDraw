@@ -9,7 +9,7 @@ namespace SimpleDraw.Model
 {
     internal class Vertex
     {
-        public const int vertexSize = 8;
+        public const int vertexSize = 10;
         private Point _vPoint;
         public Point vPoint {
             get => _vPoint;

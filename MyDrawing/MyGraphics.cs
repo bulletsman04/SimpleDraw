@@ -15,14 +15,7 @@ namespace MyDrawing
         {
             this.bitmap = bitmap;
         }
-
-        //public static MyGraphics FromImage(Bitmap _bitmap)
-        //{
-        //    bitmap = _bitmap;
-        //    return this;
-
-        //}
-
+        
         public void MyDrawLine(Pen pen, Point p1, Point p2)
         {
             int dx, dy, d, incrE, incrNe, x, y, incrX, incrY;
@@ -55,7 +48,8 @@ namespace MyDrawing
 
             x = x1;
             y = y1;
-            bitmap.SetPixel(x, y, pen.Color);
+            if(CanDraw(x,y))
+                 bitmap.SetPixel(x, y, pen.Color);
 
 
 
@@ -80,9 +74,12 @@ namespace MyDrawing
                         y += incrY;
                     }
 
-                    bitmap.SetPixel(x, y, pen.Color);
-                    bitmap.SetPixel(x, y+1, pen.Color);
-                    bitmap.SetPixel(x, y-1, pen.Color);
+                    if (CanDraw(x, y) && CanDraw(x,y+1) && CanDraw(x,y-1))
+                    {
+                        bitmap.SetPixel(x, y, pen.Color);
+                        bitmap.SetPixel(x, y + 1, pen.Color);
+                        bitmap.SetPixel(x, y - 1, pen.Color);
+                    }
 
                 }
             }
@@ -109,9 +106,19 @@ namespace MyDrawing
                         y += incrY;
                     }
 
-                    bitmap.SetPixel(x, y, pen.Color);
+                    if (CanDraw(x, y) && CanDraw(x-1, y) && CanDraw(x+1, y))
+                    {
+                        bitmap.SetPixel(x - 1, y, pen.Color);
+                        bitmap.SetPixel(x, y, pen.Color);
+                        bitmap.SetPixel(x + 1, y, pen.Color);
+                    }
                 }
             }
+        }
+
+        bool CanDraw(int x, int y)
+        {
+            return x >= 0 && x < bitmap.Width && y < bitmap.Height && y >= 0;
         }
     }
 }

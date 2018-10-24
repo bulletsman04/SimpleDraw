@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using SimpleDraw.Model;
 
 namespace SimpleDraw
@@ -45,7 +47,9 @@ namespace SimpleDraw
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-
+            if(e.Button == MouseButtons.Right)
+                return;
+            
             Point mousePoint = new Point(e.Location.X, e.Location.Y);
 
             workingArea.HandleMouseDown(mousePoint);
@@ -58,8 +62,21 @@ namespace SimpleDraw
             workingArea.HandleMouseUp();
         }
 
-     
+        private void pictureBox_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Point mousePoint = new Point(e.Location.X, e.Location.Y);
+            workingArea.HandleMouseDoubleClick(e, mousePoint);
+        }
 
-        
+        private void Reset_Click(object sender, EventArgs e)
+        {
+            workingArea.Reset();
+            
+        }
+
+        private void TestPolygon_Click(object sender, EventArgs e)
+        {
+             workingArea.CreateTestPolygon();
+        }
     }
 }

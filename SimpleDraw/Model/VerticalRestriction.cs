@@ -9,11 +9,7 @@ namespace SimpleDraw.Model
 {
     internal class VerticalRestriction: Restriction
     {
-        private Edge _edge;
-        public VerticalRestriction(Edge edge)
-        {
-            _edge = edge;
-        }
+       
 
         public override bool isResticted(Vertex moved, Vertex toCheck, Vector2D vector)
         {
@@ -21,11 +17,8 @@ namespace SimpleDraw.Model
 
         }
 
-        public override bool preserveRestriction(Vertex moved, Vector2D vector, bool left)
+        public override bool preserveRestriction(Vertex moved, Vertex toCheck, Vector2D vector)
         {
-
-            Vertex toCheck = left ? _edge.ends.left : _edge.ends.right;
-
             if (isResticted(moved,toCheck, vector))
                 return false;
             

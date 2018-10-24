@@ -103,6 +103,7 @@
             this.Reset.TabIndex = 1;
             this.Reset.Text = "Wyczyść";
             this.Reset.UseVisualStyleBackColor = true;
+            this.Reset.Click += new System.EventHandler(this.Reset_Click);
             // 
             // TestPolygon
             // 
@@ -115,6 +116,7 @@
             this.TestPolygon.TabIndex = 0;
             this.TestPolygon.Text = "Testowy wielokąt";
             this.TestPolygon.UseVisualStyleBackColor = true;
+            this.TestPolygon.Click += new System.EventHandler(this.TestPolygon_Click);
             // 
             // pictureBox
             // 
@@ -125,6 +127,7 @@
             this.pictureBox.TabIndex = 1;
             this.pictureBox.TabStop = false;
             this.pictureBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseClick);
+            this.pictureBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseDoubleClick);
             this.pictureBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseDown);
             this.pictureBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseMove);
             this.pictureBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseUp);

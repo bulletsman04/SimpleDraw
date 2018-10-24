@@ -12,9 +12,16 @@ namespace SimpleDraw.Model
         public double A { get; set; }
         public double B { get; set; }
         public double C { get; set; }
+
+        public double a => -A;
+        public double c => -C;
         public bool isVertical { get; set; }
 
         public float angle => (float)Math.Atan(B);
+
+        public LineFunction()
+        {
+        }
 
         public LineFunction(Point p1, Point p2)
         {
@@ -36,6 +43,20 @@ namespace SimpleDraw.Model
             }
 
         }
+
+
+        public LineFunction GetPLine(Point p)
+        {
+            LineFunction pLine = new LineFunction
+            {
+                A = -1 / A,
+                B = 1
+            };
+            pLine.C = -(p.Y - pLine.a * p.X);
+
+            return pLine;
+        }
+
 
         
     }

@@ -15,14 +15,13 @@ namespace SimpleDraw.Model
     {
         public List<Polygon> Polygons { get; set; }
         public Bitmap Bitmap { get; }
-        public DrawingState State { get; }
+        public DrawingState State { get; set; }
         private PictureBox pictureBox;
 
         public WorkingArea(Bitmap bitmap, PictureBox pictureBox)
         {
             Bitmap = bitmap;
             State = new DrawingState();
-            ;
             Polygons = new List<Polygon> {new Polygon()};
             State.CurrentPolygon = Polygons[Polygons.Count - 1];
             this.pictureBox = pictureBox;
@@ -36,43 +35,36 @@ namespace SimpleDraw.Model
                 gr.Clear(Color.White);
                 Pen thick_pen = new Pen(Color.Black, 2);
                 Brush brush = new SolidBrush(Color.Blue);
-                Font drawFont = new Font("Arial", 12);
-                SolidBrush drawBrush = new SolidBrush(Color.Black);
+                Font drawFont = new Font("Arial", 18);
+                SolidBrush drawBrush = new SolidBrush(Color.Red);
 
-                foreach (Vertex v in State.CurrentPolygon.Vertices)
-                {
-
-                    gr.FillRectangle(brush, v.Rectangle);
-
-                }
-
+             
                 //Test MyDrawing
                 MyGraphics myGraphics = new MyGraphics(Bitmap);
 
                 foreach (var edge in State.CurrentPolygon.Edges)
                 {
 
-                    gr.DrawLine(thick_pen, edge.ends.left.vPoint, edge.ends.right.vPoint);
-                    // ToDo: Te zwolnić, zrobić środek krawędzi i tangens krawędzi do wypozycjonowania oznaczenia
+                    myGraphics.MyDrawLine(thick_pen, edge.ends.left.vPoint, edge.ends.right.vPoint);
                     Point edgeMiddle = edge.EdgeMiddle;
 
                     foreach (var edgeRestriction in edge.Restrictions)
                     {
-                        gr.DrawString(edgeRestriction.ToString(), drawFont, drawBrush, edgeMiddle.X, edgeMiddle.Y);
+                        gr.DrawString(edgeRestriction.ToString(), drawFont, drawBrush, edgeMiddle.X-20, edgeMiddle.Y);
                     }
                 }
 
-                if (State.Mode == Mode.Edit)
+               if (State.Mode == Mode.Draw && State.MousePosition != null)
                 {
-                    gr.DrawLine(thick_pen, State.PrevVertex.vPoint, State.FirstVertex.vPoint);
+                     myGraphics.MyDrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
+                    State.MousePosition = null;
                 }
 
-                else if (State.MousePosition != null)
+                foreach (Vertex v in State.CurrentPolygon.Vertices)
                 {
-                    //Test MyDrawing
-                    // gr.DrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
-                    myGraphics.MyDrawLine(thick_pen, State.PrevVertex.vPoint, State.MousePosition.Value);
-                    State.MousePosition = null;
+
+                    gr.FillRectangle(brush, v.Rectangle);
+
                 }
 
                 drawFont.Dispose();
@@ -118,7 +110,6 @@ namespace SimpleDraw.Model
             {
                 if (v.Rectangle.Contains(mousePoint))
                 {
-                    // ToDo: TO niedobry if jeśli chodzi o obsługę wielu wielokątów
                     if (State.Mode == Mode.Draw)
                     {
                         if (State.CurrentPolygon.Vertices.Count >= 3 && v == State.FirstVertex)
@@ -132,11 +123,7 @@ namespace SimpleDraw.Model
                         }
 
                     }
-                    else
-                    {
-                        // ToDo: obsługa usuniecia wierzchołka jeśli PPM
-                    }
-
+                   
                     return true;
                 }
             }
@@ -155,6 +142,10 @@ namespace SimpleDraw.Model
                     {
                         HandleRightEdgeClick(e);
                     }
+                    else if (e.Button == MouseButtons.Left)
+                    {
+                        HandleLeftEdgeClick(mousePoint);
+                    }
 
                     return true;
                 }
@@ -163,32 +154,130 @@ namespace SimpleDraw.Model
             return false;
         }
 
+        public void HandleMouseDoubleClick(MouseEventArgs e, Point mousePoint)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                Vertex deletedVertex = null;
+                foreach (var v in State.CurrentPolygon.Vertices)
+                {
+                    if (v.Rectangle.Contains(mousePoint))
+                    {
+                        deletedVertex = v;
+                       
+                    }
+                }
+
+                if (deletedVertex != null)
+                {
+                    Edge newEdge = new Edge((deletedVertex.edges.left.ends.left, deletedVertex.edges.right.ends.right));
+                    deletedVertex.edges.left.ends.left.edges = (deletedVertex.edges.left.ends.left.edges.left, newEdge);
+                    deletedVertex.edges.right.ends.right.edges = (newEdge, deletedVertex.edges.right.ends.right.edges.right);
+                    State.CurrentPolygon.Edges.Remove(deletedVertex.edges.left);
+                    State.CurrentPolygon.Edges.Remove(deletedVertex.edges.right);
+                    State.CurrentPolygon.Edges.Add(newEdge);
+
+                    State.CurrentPolygon.Vertices.Remove(deletedVertex);
+                }
+            }
+        }
+
         private void HandleRightEdgeClick(MouseEventArgs e)
         {
             ContextMenu contextMenu = new ContextMenu();
-            contextMenu.MenuItems.Add("Length Restriction", new EventHandler(HandleLenghtRestrictionClick));
-            contextMenu.MenuItems.Add("Vertical Restriction", new EventHandler(HandleVerticalRestrictionClick));
-            contextMenu.MenuItems.Add("Horizontal Restriction", new EventHandler(HandleHorizontalRestrictionClick));
-            contextMenu.MenuItems.Add("Clear Restriction",
-                new EventHandler((sender1, e1) => State.ClickedEdge.Restrictions.Clear()));
+            contextMenu.MenuItems.Add("Length Restriction", HandleLenghtRestrictionClick);
+            contextMenu.MenuItems.Add("Vertical Restriction", HandleVerticalRestrictionClick);
+            contextMenu.MenuItems.Add("Horizontal Restriction", HandleHorizontalRestrictionClick);
+            contextMenu.MenuItems.Add("Clear Restriction", (sender1, e1) => State.ClickedEdge.Restrictions.Clear());
             pictureBox.ContextMenu = contextMenu;
             pictureBox.ContextMenu.Show(pictureBox, new Point(e.X, e.Y));
             pictureBox.ContextMenu = null;
         }
 
+        private void HandleLeftEdgeClick(Point mousePoint)
+        {
+            Point middle = State.ClickedEdge.EdgeMiddle;
+            LineFunction pLine = State.ClickedEdge.function.GetPLine(middle);
+            Point newPoint;
+
+            if (State.ClickedEdge.ends.left.vPoint.X == State.ClickedEdge.ends.right.vPoint.X)
+            {
+                newPoint = new Point(middle.X-20,middle.Y);
+            }
+            else if (State.ClickedEdge.ends.left.vPoint.Y == State.ClickedEdge.ends.right.vPoint.Y)
+            {
+                newPoint = new Point(middle.X, middle.Y-20);
+            }
+            else
+            {
+               newPoint = FindLengthPoint(mousePoint, middle, pLine, 30).Value;
+            }
+            Vertex newVertex = new Vertex(newPoint.X, newPoint.Y);
+
+            Edge left = new Edge((State.ClickedEdge.ends.left, newVertex));
+            Edge right = new Edge((newVertex, State.ClickedEdge.ends.right));
+            State.ClickedEdge.ends.left.edges = (State.ClickedEdge.ends.left.edges.left, left);
+            State.ClickedEdge.ends.right.edges = (right, State.ClickedEdge.ends.right.edges.right);
+            newVertex.edges = (left, right);
+            State.CurrentPolygon.Edges.Remove(State.ClickedEdge);
+            State.ClickedEdge = null;
+            State.CurrentPolygon.Edges.Add(left);
+            State.CurrentPolygon.Edges.Add(right);
+            State.CurrentPolygon.Vertices.Add(newVertex);
+
+        }
+
+        public Point? FindLengthPoint(Point p1, Point p2, LineFunction function, double length)
+        {
+            int x2 = p2.X;
+            int y2 = p2.Y;
+            int x1 = p1.X;
+            int y1 = p1.Y;
+
+            if (function.B == 0)
+            {
+                return y2 < y1 ? new Point(x2, (int)(y2 + length)) : new Point(x2, (int)(y2 - length));
+            }
+            double a = -function.A;
+            double b = -function.C;
+            double a2 = a * a;
+            double b2 = b * b;
+
+            double A = a2 + 1;
+            double B = 2 * a * b - 2 * y2 * a - 2 * x2;
+            double C = x2 * x2 + y2 * y2 - 2 * y2 * b + b2 - length * length;
+
+            double delta = B * B - 4 * A * C;
+
+            int xR1 = (int)Math.Round((-B - Math.Sqrt(delta)) / (2 * A));
+            int yR1 = (int)Math.Round(a * (-B - Math.Sqrt(delta)) / (2 * A) + b);
+            int xR2 = (int)Math.Round((-B + Math.Sqrt(delta)) / (2 * A));
+            int yR2 = (int)Math.Round(a * (-B + Math.Sqrt(delta)) / (2 * A) + b);
+
+
+            double dist1 = Math.Sqrt(Math.Pow(x1 - xR1, 2) + Math.Pow(y1 - yR1, 2));
+            double dist2 = Math.Sqrt(Math.Pow(x1 - xR2, 2) + Math.Pow(y1 - yR2, 2));
+
+            return dist1 <= dist2 ? new Point(xR1, yR1) : new Point(xR2, yR2);
+
+        }
+
+
         private void HandleLenghtRestrictionClick(object sender, EventArgs e)
         {
             int length = (int) State.ClickedEdge.Length;
             double desiredLength = length;
+            if (sender != null)
+            {
+                LengthWindow lw = new LengthWindow(ref desiredLength);
+                var result = lw.ShowDialog();
+                desiredLength = lw._length;
 
-            LengthWindow lw = new LengthWindow(ref desiredLength);
-            var result = lw.ShowDialog();
-            desiredLength = lw._length;
+                if (result == DialogResult.Cancel || desiredLength == 0)
+                    return;
+            }
 
-            if (result == DialogResult.Cancel || desiredLength == 0)
-                return;
-
-            AddRestriction(new LengthRestriciton(State.ClickedEdge, desiredLength));
+            AddRestriction(new LengthRestriciton(desiredLength));
 
             if (desiredLength != length)
             {
@@ -211,7 +300,7 @@ namespace SimpleDraw.Model
             if (right.Restrictions.Count >= 1 && right.Restrictions[0] is VerticalRestriction)
                 return;
 
-            AddRestriction(new VerticalRestriction(State.ClickedEdge));
+            AddRestriction(new VerticalRestriction());
             State.MovedVertex = State.ClickedEdge.ends.left;
             Point moveTo = new Point(State.ClickedEdge.ends.right.vPoint.X, State.MovedVertex.vPoint.Y);
             HandleVertexMove(moveTo);
@@ -228,7 +317,7 @@ namespace SimpleDraw.Model
             if (right.Restrictions.Count >= 1 && right.Restrictions[0] is HorizontalRestriction)
                 return;
 
-            AddRestriction(new HorizontalRestriction(State.ClickedEdge));
+            AddRestriction(new HorizontalRestriction());
 
             State.MovedVertex = State.ClickedEdge.ends.left;
             Point moveTo = new Point(State.MovedVertex.vPoint.X, State.ClickedEdge.ends.right.vPoint.Y);
@@ -260,12 +349,16 @@ namespace SimpleDraw.Model
             bool changedLeft = true;
             bool changedRight = true;
             bool anyAction = false;
+            int countEdges = 0;
+            int maxEdges = State.CurrentPolygon.Edges.Count;
 
             //left && right
             while (changedLeft || changedRight)
             {
-                changedLeft = eleft.PreserveRestrictions(vleft, new Vector2D(vleft.vPoint, vleft.MoveTo.Value), true);
-                changedRight = eright.PreserveRestrictions(vright, new Vector2D(vright.vPoint, vright.MoveTo.Value), false);
+                changedLeft = eleft.PreserveRestrictions(vleft, eleft.ends.left,
+                    new Vector2D(vleft.vPoint, vleft.MoveTo.Value));
+                changedRight = eright.PreserveRestrictions(vright, eright.ends.right,
+                    new Vector2D(vright.vPoint, vright.MoveTo.Value));
 
 
                 if (changedLeft)
@@ -274,6 +367,7 @@ namespace SimpleDraw.Model
                     eleft = vleft.edges.left;
                     movedVertices.Add(vleft);
                     anyAction = true;
+                    countEdges++;
                 }
 
                 if (changedRight)
@@ -282,16 +376,13 @@ namespace SimpleDraw.Model
                     eright = vright.edges.right;
                     movedVertices.Add(vright);
                     anyAction = true;
+                    countEdges++;
                 }
 
-                //ToDo: I wyczyść MoveTo ?
-                if (anyAction && vleft == vright)
+                //Czy my przypadkiem nie chcemy nie dopuścić do ogr na wszystkich krawędziach?
+                if (anyAction && countEdges >= maxEdges)
                     return;
             }
-
-
-
-
 
             foreach (var movedVertex in movedVertices)
             {
@@ -321,12 +412,10 @@ namespace SimpleDraw.Model
 
         public void HandleMouseDown(Point mousePoint)
         {
-            // ToDo: tymczasowe (chyba)
+            
             if (State.Mode == Mode.Draw)
                 return;
-
-
-
+            
             foreach (var v in State.CurrentPolygon.Vertices)
             {
                 if (v.Rectangle.Contains(mousePoint))
@@ -341,6 +430,38 @@ namespace SimpleDraw.Model
             if (State.Mode == Mode.Draw)
                 return;
             State.MovedVertex = null;
+        }
+
+        public void Reset()
+        {
+            State = new DrawingState();
+            Polygons = new List<Polygon> { new Polygon() };
+            State.CurrentPolygon = Polygons[Polygons.Count - 1];
+            RepaintBitmap();
+            pictureBox.Refresh();
+        }
+
+        public void CreateTestPolygon()
+        {
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 300, 100, 0), new Point(300, 100));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 400, 100, 0), new Point(400, 100));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 450, 200, 0), new Point(450, 200));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 450, 300, 0), new Point(450, 300));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 250, 300, 0), new Point(250, 300));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 450, 300, 0), new Point(450, 300));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 250, 300, 0), new Point(250, 300));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 250, 200, 0), new Point(250, 200));
+            HandleMouseClick(new MouseEventArgs(MouseButtons.Left, 1, 300, 100, 0), new Point(300, 100));
+
+            State.ClickedEdge = State.CurrentPolygon.Edges[0];
+            HandleHorizontalRestrictionClick(null,null);
+            State.ClickedEdge = State.CurrentPolygon.Edges[5];
+            HandleLenghtRestrictionClick(null, null);
+            State.ClickedEdge = State.CurrentPolygon.Edges[4];
+            HandleVerticalRestrictionClick(null, null);
+
+            RepaintBitmap();
+            pictureBox.Refresh();
         }
 
     }
