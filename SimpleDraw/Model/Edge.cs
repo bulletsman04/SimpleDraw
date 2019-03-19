@@ -117,5 +117,41 @@ namespace SimpleDraw.Model
             return  dist1 <= dist2 ? new Point(xR1, yR1) : new Point(xR2, yR2);
 
         }
+
+        public static bool EdgesIntersection(Edge e1, Edge e2)
+        {
+            Point p1 = e1.ends.left.vPoint;
+            Point p2 = e1.ends.right.vPoint;
+            Point p3 = e2.ends.left.vPoint;
+            Point p4 = e2.ends.right.vPoint;
+
+            double d1 = CrossProduct(new Point(p4.X - p3.X, p4.Y - p3.Y), new Point(p1.X - p3.X, p1.Y - p3.Y));
+            double d2 = CrossProduct(new Point(p4.X - p3.X, p4.Y - p3.Y), new Point(p2.X - p3.X, p2.Y - p3.Y));
+            double d3 = CrossProduct(new Point(p2.X - p1.X, p2.Y - p1.Y), new Point(p3.X - p1.X, p3.Y - p1.Y));
+            double d4 = CrossProduct(new Point(p2.X - p1.X, p2.Y - p1.Y), new Point(p4.X - p1.X, p4.Y - p1.Y));
+
+            double d12 = d1 * d2;
+            double d34 = d3 * d4;
+
+            if (d12 > 0 || d34 > 0)
+                return false;
+            if (d12 < 0 || d34 < 0)
+                return true;
+
+            return OnRectangle(p1, p3, p4) || OnRectangle(p2, p3, p4) || OnRectangle(p3, p1, p2) ||
+                   OnRectangle(p4, p1, p2);
+
+        }
+
+        private static double CrossProduct(Point p1, Point p2)
+        {
+            return p1.X * p2.Y - p2.X * p1.Y;
+        }
+
+        private static bool OnRectangle(Point q, Point p1, Point p2)
+        {
+            return Math.Min(p1.X, p2.X) <= q.X && q.X <= Math.Max(p1.X, p2.X) && Math.Min(p1.Y, p2.Y) <= q.Y &&
+                   q.Y <= Math.Max(p1.Y, p2.Y);
+        }
     }
 }

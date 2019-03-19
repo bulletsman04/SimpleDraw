@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 using SimpleDraw.Model;
 
 namespace SimpleDraw
 {
+    // Temat: 2c
     public partial class SimpleDraw : Form
     {
         internal WorkingArea workingArea;
@@ -76,6 +76,7 @@ namespace SimpleDraw
 
         private void TestPolygon_Click(object sender, EventArgs e)
         {
+            workingArea.Reset();
              workingArea.CreateTestPolygon();
         }
     }

@@ -36,9 +36,14 @@ namespace SimpleDraw.Model
                 Pen thick_pen = new Pen(Color.Black, 2);
                 Brush brush = new SolidBrush(Color.Blue);
                 Font drawFont = new Font("Arial", 18);
-                SolidBrush drawBrush = new SolidBrush(Color.Red);
+                SolidBrush drawBrush = new SolidBrush(Color.Purple);
 
-             
+
+                if (CheckIntersections() == true)
+                {
+                    thick_pen = new Pen(Color.Red, 2);
+                }
+
                 //Test MyDrawing
                 MyGraphics myGraphics = new MyGraphics(Bitmap);
 
@@ -72,6 +77,36 @@ namespace SimpleDraw.Model
                 thick_pen.Dispose();
                 drawBrush.Dispose();
             }
+        }
+
+        private bool CheckIntersections()
+        {
+            Edge drawingEdge = null;
+            if (State.Mode == Mode.Draw)
+            {
+                if (State.MousePosition != null)
+                    drawingEdge = new Edge((State.PrevVertex,
+                        new Vertex(State.MousePosition.Value.X, State.MousePosition.Value.Y)));
+            }
+            foreach (var edge1 in State.CurrentPolygon.Edges)
+            {
+                foreach (var edge2 in State.CurrentPolygon.Edges)
+                {
+                    if(edge1.ends.left.edges.left == edge2 || edge1.ends.right.edges.right == edge2 || edge2==edge1)
+                        continue;
+
+                    if (Edge.EdgesIntersection(edge1, edge2))
+                        return true;
+                }
+
+                if (drawingEdge != null && edge1.ends.left != State.PrevVertex && edge1.ends.right!= State.PrevVertex)
+                {
+                    if (Edge.EdgesIntersection(edge1, drawingEdge))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         public void HandleMouseClick(MouseEventArgs e, Point mousePoint)
@@ -210,7 +245,7 @@ namespace SimpleDraw.Model
             }
             else
             {
-               newPoint = FindLengthPoint(mousePoint, middle, pLine, 30).Value;
+               newPoint = FindLengthPoint(mousePoint, middle, pLine, 40).Value;
             }
             Vertex newVertex = new Vertex(newPoint.X, newPoint.Y);
 
